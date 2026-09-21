@@ -33,10 +33,19 @@ coverage/
 # Build output
 dist/
 build/
+*.tsbuildinfo
 
-# Cache
+# Tool and framework cache
 .cache/
 .npm/
+.vite/
+.vercel/
+.railway/
+.eslintcache
+
+# Runtime files
+*.pid
+*.pid.lock
 
 # Local database files (if added later)
 *.db

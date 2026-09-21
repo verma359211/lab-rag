@@ -1,0 +1,152 @@
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #172033;
+  background: #f4f6fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.page {
+  width: min(900px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+header {
+  margin-bottom: 28px;
+}
+
+h1 {
+  margin: 4px 0 8px;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+p {
+  line-height: 1.55;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #5b65d6;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.card {
+  margin-bottom: 20px;
+  padding: 24px;
+  background: white;
+  border: 1px solid #dfe3ec;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(23, 32, 51, 0.06);
+}
+
+.upload-form,
+.question-form {
+  display: flex;
+  gap: 12px;
+}
+
+input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #c8cede;
+  border-radius: 10px;
+}
+
+button {
+  padding: 12px 18px;
+  color: white;
+  background: #515bd4;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.status {
+  margin-bottom: 0;
+}
+
+.messages {
+  min-height: 280px;
+  max-height: 480px;
+  margin-bottom: 16px;
+  padding: 16px;
+  overflow-y: auto;
+  background: #f7f8fb;
+  border-radius: 12px;
+}
+
+.message {
+  width: fit-content;
+  max-width: 80%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  background: white;
+  border: 1px solid #e1e5ee;
+  border-radius: 12px;
+}
+
+.message.user {
+  margin-left: auto;
+  color: white;
+  background: #515bd4;
+  border-color: #515bd4;
+}
+
+.message.error {
+  color: #a32020;
+  background: #fff1f1;
+}
+
+.message p {
+  margin: 4px 0;
+  white-space: pre-wrap;
+}
+
+.message small {
+  color: #687084;
+}
+
+.empty {
+  color: #687084;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 24px 0;
+  }
+
+  .upload-form,
+  .question-form {
+    flex-direction: column;
+  }
+
+  .message {
+    max-width: 92%;
+  }
+}
