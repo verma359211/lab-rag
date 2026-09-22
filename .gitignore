@@ -1,6 +1,15 @@
 # Dependencies
 node_modules/
 
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 # Environment variables / API keys
 .env
 .env.*
