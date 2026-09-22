@@ -1,31 +1,28 @@
-"""Find relevant PDF chunks and prepare them for the language model.
+"""Run hybrid search and prepare the winning chunks for the language model.
 
-Retrieval is the first half of answering a question. It searches the stored
-vectors but does not generate an answer. Keeping retrieval separate makes it
-easy to add keyword search and reranking later.
+Retrieval is the first half of answering a question. Vector search finds
+similar meanings, keyword search finds exact terms, and Reciprocal Rank Fusion
+combines their ordered result lists.
 """
 
-from langchain_core.documents import Document
-
-from app.config import RETRIEVAL_LIMIT
-from app.vector_store import get_vector_store
-
-
-SearchResult = tuple[Document, float]
+from app.search.fusion import fuse_results
+from app.search.keyword_search import search_by_keyword
+from app.search.models import SearchResult
+from app.search.vector_search import search_by_vector
 
 
 def retrieve_documents(question: str) -> list[SearchResult]:
-    """Return the PDF chunks whose vectors are closest to the question.
+    """Return the best chunks from vector and keyword retrieval together.
 
-    LangChain first embeds the question with the same Gemini model used during
-    ingestion. PGVector then compares that question vector with stored chunk
-    vectors and returns the best matches together with relevance scores.
+    The two searches intentionally stay separate until the fusion step. This
+    makes their behavior easier to inspect and lets us add a reranker later
+    without rewriting the database search functions.
     """
 
-    return get_vector_store().similarity_search_with_relevance_scores(
-        query=question,
-        k=RETRIEVAL_LIMIT,
-    )
+    vector_results = search_by_vector(question)
+    keyword_results = search_by_keyword(question)
+
+    return fuse_results(vector_results, keyword_results)
 
 
 def build_context(results: list[SearchResult]) -> tuple[str, list[str]]:
@@ -39,7 +36,8 @@ def build_context(results: list[SearchResult]) -> tuple[str, list[str]]:
     context_parts: list[str] = []
     sources: list[str] = []
 
-    for document, _score in results:
+    for result in results:
+        document = result.document
         source = document.metadata.get("source", "Unknown source")
         page = document.metadata.get("page")
 

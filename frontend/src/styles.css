@@ -90,6 +90,84 @@ button:disabled {
   margin-bottom: 0;
 }
 
+.card-heading,
+.document-summary,
+.document-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-heading,
+.document-summary {
+  justify-content: space-between;
+}
+
+.card-heading h2,
+.card-heading p {
+  margin: 0;
+}
+
+.card-heading p {
+  margin-top: 4px;
+  color: #687084;
+}
+
+.document-list {
+  margin-top: 18px;
+}
+
+.document-item {
+  padding: 14px 0;
+  border-top: 1px solid #e1e5ee;
+}
+
+.document-summary small {
+  display: block;
+  margin-top: 4px;
+  color: #687084;
+}
+
+.secondary-button,
+.danger-button {
+  padding: 8px 12px;
+}
+
+.secondary-button {
+  color: #3f49bd;
+  background: #eef0ff;
+}
+
+.danger-button {
+  background: #b43838;
+}
+
+.chunk-list {
+  max-height: 360px;
+  margin-top: 14px;
+  padding: 12px;
+  overflow-y: auto;
+  background: #f7f8fb;
+  border-radius: 10px;
+}
+
+.chunk-item {
+  margin-bottom: 10px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e1e5ee;
+  border-radius: 10px;
+}
+
+.chunk-item:last-child {
+  margin-bottom: 0;
+}
+
+.chunk-item p {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+}
+
 .messages {
   min-height: 280px;
   max-height: 480px;
@@ -142,8 +220,11 @@ button:disabled {
   }
 
   .upload-form,
-  .question-form {
+  .question-form,
+  .card-heading,
+  .document-summary {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .message {

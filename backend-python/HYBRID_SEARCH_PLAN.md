@@ -1,5 +1,19 @@
 # Hybrid search implementation plan
 
+## Current status
+
+The first hybrid-search version is now implemented:
+
+- New chunks receive document, chunk, and sequence IDs.
+- Vector and PostgreSQL keyword searches run independently.
+- Reciprocal Rank Fusion combines their rankings.
+- Only the best fused chunks are passed to Groq.
+- A SQL migration adds the full-text GIN index.
+- Unit tests cover the fusion behavior.
+
+The remaining production-oriented work is evaluation, optional reranking, and
+eventually owning our database schema instead of using LangChain's tables.
+
 ## Goal
 
 Our current retrieval uses vector search only. Hybrid search will run vector
@@ -29,7 +43,7 @@ when it appears in both result lists.
 
 ## Implementation stages
 
-### 1. Give every stored chunk an identity
+### 1. Give every stored chunk an identity — implemented
 
 Update `ingestion.py` before saving chunks:
 
@@ -41,7 +55,7 @@ Update `ingestion.py` before saving chunks:
 For this small project, we can re-ingest existing PDFs after making the change.
 That is clearer than writing a one-off migration for old metadata.
 
-### 2. Add a PostgreSQL keyword-search index
+### 2. Add a PostgreSQL keyword-search index — implemented
 
 Create a small SQL migration that adds a GIN full-text index over the document
 text stored by LangChain. PostgreSQL's `to_tsvector` converts document text
@@ -56,7 +70,7 @@ The keyword query will use:
 We will keep this SQL in a migration file instead of hiding database setup in
 Python startup code.
 
-### 3. Split retrieval into two small search functions
+### 3. Split retrieval into two small search functions — implemented
 
 Create these focused modules:
 
@@ -71,7 +85,7 @@ Each search will initially return about 20 candidates. This wider candidate
 set gives the fusion step enough useful results to compare. It does not mean
 all 20 chunks will be sent to the language model.
 
-### 4. Combine rankings with Reciprocal Rank Fusion
+### 4. Combine rankings with Reciprocal Rank Fusion — implemented
 
 Vector and keyword scores use different scales, so adding their raw scores
 would be misleading. Reciprocal Rank Fusion (RRF) uses each chunk's position
@@ -86,7 +100,7 @@ If it ranks well in both lists, its two contributions are added and it moves
 up. The constant `60` prevents the first result from overpowering everything
 else and is a common starting value, not a value we need to tune immediately.
 
-### 5. Send only the best fused chunks to generation
+### 5. Send only the best fused chunks to generation — implemented
 
 After fusion we will:
 
@@ -98,7 +112,7 @@ After fusion we will:
 The `/chat` request and response shape can stay unchanged, so the React
 frontend will not need to change for the first version.
 
-### 6. Add simple retrieval diagnostics
+### 6. Add simple retrieval diagnostics — partly implemented
 
 During development, return or log enough information to understand why a chunk
 won:
@@ -151,5 +165,6 @@ complexity for the first tutorial implementation.
 6. Test the existing frontend against the unchanged `/chat` endpoint.
 7. Evaluate retrieval quality before deciding on a reranker.
 
-Hybrid search has not been enabled yet. This document defines the next safe,
-testable steps without changing the behavior of the working RAG application.
+Hybrid search is enabled. Evaluation and reranking remain deliberate future
+steps so we can measure the value of each addition instead of adding complexity
+without evidence.

@@ -13,6 +13,7 @@ store already has our Gemini embedding client attached to it.
 
 import tempfile
 from pathlib import Path
+from uuid import uuid4
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
@@ -73,8 +74,23 @@ def ingest_pdf(pdf_bytes: bytes, filename: str) -> int:
     pages = load_pdf(pdf_bytes, filename)
     chunks = split_documents(pages)
 
+    # One document ID groups every chunk created from this upload. Each chunk
+    # also receives its own ID, which lets vector search and keyword search
+    # recognize the same result when we combine their rankings.
+    document_id = str(uuid4())
+    chunk_ids: list[str] = []
+
+    for chunk_number, chunk in enumerate(chunks):
+        chunk_id = str(uuid4())
+        chunk_ids.append(chunk_id)
+
+        chunk.metadata["document_id"] = document_id
+        chunk.metadata["chunk_id"] = chunk_id
+        chunk.metadata["chunk_number"] = chunk_number
+
     # PGVector creates embeddings for the chunk text and stores the resulting
-    # vectors, text, and metadata in PostgreSQL.
-    get_vector_store().add_documents(chunks)
+    # vectors, text, and metadata in PostgreSQL. Passing our IDs also makes the
+    # underlying database row use the same stable chunk identity.
+    get_vector_store().add_documents(chunks, ids=chunk_ids)
 
     return len(chunks)

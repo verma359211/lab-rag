@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { askQuestion, uploadDocument } from "./api";
+import DocumentsPanel from "./DocumentsPanel";
 
 export default function App() {
   const [file, setFile] = useState(null);
@@ -8,6 +9,7 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [answering, setAnswering] = useState(false);
+  const [documentsRefreshToken, setDocumentsRefreshToken] = useState(0);
 
   async function handleUpload(event) {
     event.preventDefault();
@@ -22,6 +24,7 @@ export default function App() {
       setUploadStatus("Uploading and processing the PDF...");
       const result = await uploadDocument(file);
       setUploadStatus(result.message);
+      setDocumentsRefreshToken((current) => current + 1);
     } catch (error) {
       setUploadStatus(error.message);
     } finally {
@@ -83,8 +86,10 @@ export default function App() {
         {uploadStatus && <p className="status">{uploadStatus}</p>}
       </section>
 
+      <DocumentsPanel refreshToken={documentsRefreshToken} />
+
       <section className="card chat-card">
-        <h2>2. Ask a question</h2>
+        <h2>3. Ask a question</h2>
 
         <div className="messages" aria-live="polite">
           {messages.length === 0 && (

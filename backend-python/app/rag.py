@@ -23,12 +23,21 @@ def answer_question(question: str) -> dict:
     context, sources = build_context(results)
     answer = generate_answer(context, question)
 
-    # Results are already ordered from most relevant to least relevant, so the
-    # first score gives the frontend a simple view of the strongest match.
-    top_similarity = results[0][1]
+    # Preserve the existing frontend field. With hybrid retrieval, the first
+    # result may have come from keyword search only, so we use the first vector
+    # score that is available among the chunks included in the prompt.
+    top_similarity = next(
+        (
+            result.vector_score
+            for result in results
+            if result.vector_score is not None
+        ),
+        None,
+    )
 
     return {
         "answer": answer,
         "sources": sources,
         "topSimilarity": top_similarity,
+        "retrievalMethod": "hybrid",
     }
