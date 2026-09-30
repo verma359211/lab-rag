@@ -19,6 +19,10 @@ def search_by_vector(question: str) -> list[SearchResult]:
     )
 
     return [
-        SearchResult(document=document, vector_score=float(score))
-        for document, score in matches
+        SearchResult(
+            document=document,
+            vector_score=float(score),
+            vector_rank=rank,
+        )
+        for rank, (document, score) in enumerate(matches, start=1)
     ]

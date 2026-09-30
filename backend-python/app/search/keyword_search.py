@@ -63,6 +63,7 @@ def search_by_keyword(question: str) -> list[SearchResult]:
                 metadata=row[2] or {},
             ),
             keyword_score=float(row[3]),
+            keyword_rank=rank,
         )
-        for row in rows
+        for rank, row in enumerate(rows, start=1)
     ]

@@ -54,6 +54,16 @@ class FusionTests(unittest.TestCase):
 
         self.assertEqual(result_ids, {"vector-only", "keyword-only"})
 
+    def test_none_limit_returns_the_complete_ranking(self):
+        vector_results = [
+            SearchResult(make_document(str(index)), vector_score=0.9)
+            for index in range(12)
+        ]
+
+        results = fuse_results(vector_results, [], limit=None)
+
+        self.assertEqual(len(results), 12)
+
 
 if __name__ == "__main__":
     unittest.main()

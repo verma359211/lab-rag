@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_frontend_origins
 from app.documents import delete_document, get_document_chunks, list_documents
+from app.evaluations.routes import router as evaluations_router
 from app.ingestion import ingest_pdf
 from app.rag import answer_question
 from app.schemas import ChatRequest
@@ -27,6 +28,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Evaluation routes live in a focused module because their background-job
+# workflow is independent from normal chat and document requests.
+app.include_router(evaluations_router)
 
 
 @app.get("/health")
@@ -82,7 +87,7 @@ def chat(request: ChatRequest):
         raise HTTPException(status_code=400, detail="question is required")
 
     try:
-        return answer_question(question)
+        return answer_question(question, request.search_mode)
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error)) from error
 

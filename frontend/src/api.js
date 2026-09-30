@@ -22,11 +22,11 @@ export async function uploadDocument(file) {
   return readResponse(response);
 }
 
-export async function askQuestion(question) {
+export async function askQuestion(question, searchMode) {
   const response = await fetch(apiUrl("/chat"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, searchMode }),
   });
 
   return readResponse(response);
@@ -51,6 +51,40 @@ export async function deleteDocument(source) {
     method: "DELETE",
   });
 
+  return readResponse(response);
+}
+
+export async function startEvaluation(options) {
+  const response = await fetch(apiUrl("/evaluations"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  });
+
+  return readResponse(response);
+}
+
+export async function getEvaluations() {
+  const response = await fetch(apiUrl("/evaluations"));
+  return readResponse(response);
+}
+
+export async function getEvaluation(runId) {
+  const response = await fetch(apiUrl(`/evaluations/${runId}`));
+  return readResponse(response);
+}
+
+export async function cancelEvaluation(runId) {
+  const response = await fetch(apiUrl(`/evaluations/${runId}/cancel`), {
+    method: "POST",
+  });
+  return readResponse(response);
+}
+
+export async function resumeEvaluation(runId) {
+  const response = await fetch(apiUrl(`/evaluations/${runId}/resume`), {
+    method: "POST",
+  });
   return readResponse(response);
 }
 

@@ -3,7 +3,17 @@ import {
   deleteDocument,
   getDocumentChunks,
   getDocuments,
-} from "./api";
+} from "../api";
+
+function getChunkLabel(metadata) {
+  const chunkNumber = metadata.chunk_number;
+  return Number.isInteger(chunkNumber) ? `Chunk ${chunkNumber + 1}` : "Legacy chunk";
+}
+
+function getPageLabel(metadata) {
+  const page = metadata.page;
+  return Number.isInteger(page) ? `Page ${page + 1}` : "Page unknown";
+}
 
 export default function DocumentsPanel({ refreshToken }) {
   const [documents, setDocuments] = useState([]);
@@ -13,7 +23,8 @@ export default function DocumentsPanel({ refreshToken }) {
   const [loading, setLoading] = useState(true);
   const [deletingSource, setDeletingSource] = useState("");
 
-  // Reload when the component first appears and after App reports a new upload.
+  // The token changes after an upload, which reloads the document summaries
+  // without coupling this component to the upload form.
   useEffect(() => {
     loadDocuments();
   }, [refreshToken]);
@@ -32,7 +43,6 @@ export default function DocumentsPanel({ refreshToken }) {
   }
 
   async function handleViewChunks(source) {
-    // Clicking View again closes the currently open chunk list.
     if (selectedSource === source) {
       setSelectedSource("");
       setChunks([]);
@@ -42,7 +52,7 @@ export default function DocumentsPanel({ refreshToken }) {
     try {
       setSelectedSource(source);
       setChunks([]);
-      setStatus("Loading stored chunks...");
+      setStatus("Loading chunks...");
 
       const result = await getDocumentChunks(source);
       setChunks(result.chunks);
@@ -54,8 +64,8 @@ export default function DocumentsPanel({ refreshToken }) {
   }
 
   async function handleDelete(source) {
-    // Deletion removes every chunk grouped under this filename. A confirmation
-    // prevents an accidental click from immediately removing vector data.
+    // Source-based deletion is temporary for legacy chunks. Confirmation is
+    // important because every row sharing this filename will be removed.
     const confirmed = window.confirm(
       `Delete ${source} and all of its stored chunks?`,
     );
@@ -81,16 +91,18 @@ export default function DocumentsPanel({ refreshToken }) {
   }
 
   return (
-    <section className="card">
-      <div className="card-heading">
+    <section className="panel">
+      <div className="section-heading">
         <div>
-          <h2>2. Stored documents</h2>
-          <p>Documents are temporarily grouped by their source filename.</p>
+          <span className="step">02</span>
+          <h2>Documents</h2>
         </div>
-        <button className="secondary-button" onClick={loadDocuments} type="button">
+        <button className="text-button" onClick={loadDocuments} type="button">
           Refresh
         </button>
       </div>
+
+      <p className="section-note">Temporarily grouped by source filename.</p>
 
       {loading && <p className="empty">Loading documents...</p>}
 
@@ -111,14 +123,14 @@ export default function DocumentsPanel({ refreshToken }) {
 
               <div className="document-actions">
                 <button
-                  className="secondary-button"
+                  className="text-button"
                   onClick={() => handleViewChunks(document.source)}
                   type="button"
                 >
-                  {selectedSource === document.source ? "Hide chunks" : "View chunks"}
+                  {selectedSource === document.source ? "Hide" : "Inspect"}
                 </button>
                 <button
-                  className="danger-button"
+                  className="delete-button"
                   disabled={deletingSource === document.source}
                   onClick={() => handleDelete(document.source)}
                   type="button"
@@ -130,16 +142,13 @@ export default function DocumentsPanel({ refreshToken }) {
 
             {selectedSource === document.source && (
               <div className="chunk-list">
-                {chunks.length === 0 && (
-                  <p className="empty">Loading chunks...</p>
-                )}
+                {chunks.length === 0 && <p className="empty">Loading chunks...</p>}
 
                 {chunks.map((chunk) => (
                   <article className="chunk-item" key={chunk.id}>
-                    <strong>
-                      Chunk {chunk.metadata.chunk_number ?? "old"} · Page{" "}
-                      {(chunk.metadata.page ?? 0) + 1}
-                    </strong>
+                    <small>
+                      {getChunkLabel(chunk.metadata)} · {getPageLabel(chunk.metadata)}
+                    </small>
                     <p>{chunk.content}</p>
                   </article>
                 ))}

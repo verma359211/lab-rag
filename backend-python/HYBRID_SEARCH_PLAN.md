@@ -11,8 +11,9 @@ The first hybrid-search version is now implemented:
 - A SQL migration adds the full-text GIN index.
 - Unit tests cover the fusion behavior.
 
-The remaining production-oriented work is evaluation, optional reranking, and
-eventually owning our database schema instead of using LangChain's tables.
+Evaluation and local cross-encoder reranking are now implemented. A later
+production cleanup can own the database schema instead of using LangChain's
+tables.
 
 ## Goal
 
@@ -124,7 +125,7 @@ won:
 
 This should be behind a debug setting so normal API responses stay clean.
 
-### 7. Evaluate before adding a reranker
+### 7. Evaluate before adding a reranker — implemented
 
 Create a small set of questions with known relevant pages. Include semantic
 questions as well as questions containing exact names or codes. Compare:
@@ -137,12 +138,11 @@ Useful first measurements are Recall@5 (did the correct chunk reach the first
 five?) and Mean Reciprocal Rank (how early did the first correct chunk appear?).
 We should keep hybrid search only if it improves the examples we care about.
 
-### 8. Add a reranker afterward
+### 8. Add a reranker afterward — implemented
 
-A reranker is a separate improvement. Once hybrid search works, it can examine
-the best 20 to 40 fused candidates more carefully and return the best 5 to 8.
-Keeping it as a later stage makes it easy to measure whether the extra model
-call improves quality enough to justify its latency and cost.
+The `hybrid_rerank` mode sends the best 20 fused candidates through a local
+Sentence Transformers cross-encoder and returns the best 5. The ordinary
+`hybrid` mode remains available as the unchanged comparison baseline.
 
 ## Later production cleanup
 
@@ -165,6 +165,6 @@ complexity for the first tutorial implementation.
 6. Test the existing frontend against the unchanged `/chat` endpoint.
 7. Evaluate retrieval quality before deciding on a reranker.
 
-Hybrid search is enabled. Evaluation and reranking remain deliberate future
-steps so we can measure the value of each addition instead of adding complexity
-without evidence.
+Hybrid search, evaluation, and optional cross-encoder reranking are enabled.
+The two hybrid modes remain separate so their quality and latency can be
+measured against each other.

@@ -111,6 +111,28 @@ PostgreSQL full-text search, then combines their rankings using Reciprocal Rank
 Fusion. See [HYBRID_SEARCH_PLAN.md](./HYBRID_SEARCH_PLAN.md) for the design,
 completed stages, and sensible future improvements.
 
+The chat request can select one of four retrieval paths:
+
+```json
+{
+  "question": "What skills are mentioned?",
+  "searchMode": "hybrid"
+}
+```
+
+Valid modes are `hybrid`, `hybrid_rerank`, `vector`, and `keyword`. Omitting
+`searchMode` defaults to hybrid, so earlier API clients continue to work.
+
+`hybrid_rerank` retrieves broad vector and keyword candidate lists, combines
+them with RRF, and reranks the strongest 20 chunks with the local
+`cross-encoder/ms-marco-MiniLM-L-6-v2` model. Only the best five chunks are
+sent to the answer model. The cross-encoder is downloaded the first time this
+mode is used and then reused for later requests.
+
+The response includes one retrieval detail per chunk. Vector relevance,
+PostgreSQL keyword score, RRF score, and reranker score remain separate because
+they use different scales. A higher value is better within its own score type.
+
 Run the fast fusion tests without using the database or external APIs:
 
 ```powershell

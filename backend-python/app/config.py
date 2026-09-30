@@ -31,6 +31,11 @@ CHUNK_OVERLAP = 50
 SEARCH_CANDIDATE_LIMIT = 20
 RETRIEVAL_LIMIT = 5
 
+# Reranking is intentionally limited to the strongest RRF candidates. A
+# cross-encoder is more accurate than the first-stage retrievers, but it is
+# also slower because it reads the question together with every candidate.
+RERANK_CANDIDATE_LIMIT = 20
+
 # Reciprocal Rank Fusion commonly starts with 60. A larger value makes the
 # ranking differences less extreme, so both search methods get a fair vote.
 RRF_K = 60
@@ -114,6 +119,15 @@ def get_chat_model_name() -> str:
     """Return the Groq chat model configured for answer generation."""
 
     return os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+
+
+def get_reranker_model_name() -> str:
+    """Return the local cross-encoder model used for second-stage ranking."""
+
+    return os.getenv(
+        "RERANKER_MODEL",
+        "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    )
 
 
 def get_frontend_origins() -> list[str]:

@@ -1,8 +1,14 @@
 """Shared result shape used by vector, keyword, and fused search."""
 
 from dataclasses import dataclass
+from typing import Literal
 
 from langchain_core.documents import Document
+
+
+# Keeping the allowed names in one type prevents the API and retrieval code
+# from slowly developing different spellings for the same search modes.
+SearchMode = Literal["hybrid", "hybrid_rerank", "vector", "keyword"]
 
 
 @dataclass
@@ -19,3 +25,6 @@ class SearchResult:
     vector_rank: int | None = None
     keyword_rank: int | None = None
     fusion_score: float = 0.0
+    fusion_rank: int | None = None
+    reranker_score: float | None = None
+    reranker_rank: int | None = None

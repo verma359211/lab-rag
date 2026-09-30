@@ -29,6 +29,7 @@ def get_document_key(document: Document) -> str:
 def fuse_results(
     vector_results: list[SearchResult],
     keyword_results: list[SearchResult],
+    limit: int | None = RETRIEVAL_LIMIT,
 ) -> list[SearchResult]:
     """Merge two ordered result lists and return the strongest chunks.
 
@@ -61,4 +62,14 @@ def fuse_results(
         reverse=True,
     )
 
-    return ranked_results[:RETRIEVAL_LIMIT]
+    # Preserve the RRF position so the UI can show what changed after a later
+    # cross-encoder reranking step.
+    for rank, result in enumerate(ranked_results, start=1):
+        result.fusion_rank = rank
+
+    # The application keeps the normal five-result limit. Evaluation can pass
+    # ``None`` to inspect the complete fused ranking and calculate Hit@10.
+    if limit is None:
+        return ranked_results
+
+    return ranked_results[:limit]
